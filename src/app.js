@@ -8,6 +8,9 @@ import cartRouter from './routes/carts.router.js';
 import { engine } from 'express-handlebars'; //
 import __dirname from '../dirname.js';
 import viewsRouter from './routes/views.router.js';
+import passport from './config/passport.config.js';
+import usersRouter from './routes/users.router.js';
+import sessionsRouter from './routes/sessions.router.js';
 
 //Inicializacion de las variables
 dotenv.config();
@@ -18,6 +21,9 @@ const app = express();
 app.use(express.json()); // Middleware para parsear JSON
 app.use(express.urlencoded({ extended: true })); // Middleware para parsear datos de formularios
 app.use(express.static(__dirname + '/public')); // Middleware para servir archivos estáticos
+
+// passport
+app.use(passport.initialize());
 
 const PORT = process.env.PORT || 8080;
 
@@ -42,6 +48,8 @@ app.set('views', __dirname + '/src/views');
 //Endpoints
 app.use('/api/products', productsRouter);
 app.use('/api/carts', cartRouter);
+app.use('/api/users', usersRouter);
+app.use('/api/sessions', sessionsRouter);
 app.use('/', viewsRouter);
 
 //Manejo de errores
