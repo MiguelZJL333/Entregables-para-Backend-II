@@ -1,5 +1,9 @@
 # Entrega Uno - Backend 2 (Comisión 76985)
 
+***LEA ESTO POR FAVOR***
+"Este proyecto tambien esta incluido mi tarea de backen 1, pero le agregue lo que se tenia que agregar para la entrega de Backend 2, lo digo por si ve el proyecto muy grande o si ve en la base de datos un tabla de productos.
+Pero la creacion de usuario y endpoint si funcionan"
+
 Este proyecto es un ecommerce básico que ahora incluye un sistema completo de usuarios con autenticación y autorización. A continuación se explica cómo configurar y ejecutar el proyecto.
 
 ## 📦 Dependencias nuevas
