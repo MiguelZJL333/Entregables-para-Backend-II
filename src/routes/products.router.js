@@ -1,41 +1,26 @@
 import express from 'express';
-import ProductModel from '../models/product.model.js';
-import { getAllProducts, addProducts, updateProduct, deleteProduct } from '../controllers/products.controller.js';
+import { getAllProducts, getProductById, addProduct, updateProduct, deleteProduct } from '../controllers/products.controller.js';
+import { authMiddleware, adminOnly } from '../middlewares/auth.middleware.js';
 
 const productsRouter = express.Router();
+
 /*----------------------------GET--------------------------------*/
-// Obtener todos los productos
+// Obtener todos los productos (público)
 productsRouter.get('/', getAllProducts);
 
-// Obtener un producto por ID
-productsRouter.get('/:pid', async (req, res, next) => {
-    try {
-        const { pid } = req.params;
-        const product = await ProductModel.findById(pid).lean();
-        
-        if (!product) {
-            return res.status(404).json({ status: 'error', message: 'Producto no encontrado' });
-        }
-        
-        res.status(200).json({ status: 'success', payload: product });
-    } catch (error) {
-        next(error);
-    }
-});
+// Obtener un producto por ID (público)
+productsRouter.get('/:pid', getProductById);
 
 /*----------------------------POST--------------------------------*/
-///Post - Crear un nuevo producto
-productsRouter.post('/', addProducts);
-
+// Crear un nuevo producto (solo admin)
+productsRouter.post('/', authMiddleware, adminOnly, addProduct);
 
 /*---------------------------PUT--------------------------------*/
-// Put - Actualizar un producto existente
-productsRouter.put('/:pid', updateProduct);
+// Actualizar un producto existente (solo admin)
+productsRouter.put('/:pid', authMiddleware, adminOnly, updateProduct);
 
 /*----------------------------DELETE--------------------------------*/
-// Delete - Eliminar un producto
-productsRouter.delete('/:pid', deleteProduct);
-
-
+// Eliminar un producto (solo admin)
+productsRouter.delete('/:pid', authMiddleware, adminOnly, deleteProduct);
 
 export default productsRouter;

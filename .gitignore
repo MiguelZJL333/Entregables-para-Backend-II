@@ -1,2 +1,7 @@
 .env
 node_modules
+# Archivos de documentación que no deben subirse
+RESUMEN_IMPLEMENTACION.md
+SEGURIDAD.md
+SUMARIO_EJECUTIVO.md
+QUICKSTART.md

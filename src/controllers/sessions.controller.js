@@ -1,50 +1,140 @@
-import UserModel from '../models/user.model.js';
-import CartModel from '../models/cart.model.js';
-import jwt from 'jsonwebtoken';
-import dotenv from 'dotenv';
-import { errorHandler } from '../util/httpErrors.js';
+import userService from '../services/user.service.js';
+import { generateToken } from '../utils/jwt.js';
+import { AuthUserDTO } from '../dtos/user.dto.js';
 
-dotenv.config();
-
-// Registrar un nuevo usuario y crearle un carrito
+/**
+ * Registra un nuevo usuario
+ */
 export const register = async (req, res, next) => {
     try {
         const { first_name, last_name, email, age, password } = req.body;
+
+        // Validaciones básicas
         if (!first_name || !last_name || !email || !age || !password) {
-            return errorHandler('Faltan datos obligatorios', 400);
+            return res.status(400).json({
+                status: 'error',
+                message: 'Faltan datos obligatorios'
+            });
         }
 
-        const existing = await UserModel.findOne({ email });
-        if (existing) return errorHandler('Email ya registrado', 400);
-
-        const cart = await CartModel.create({});
-        const user = await UserModel.create({
+        const user = await userService.registerUser({
             first_name,
             last_name,
             email,
             age,
-            password,
-            cart: cart._id
+            password
         });
 
-        res.status(201).json({ status: 'success', payload: user });
+        res.status(201).json({
+            status: 'success',
+            message: 'Usuario registrado correctamente',
+            payload: new AuthUserDTO(user)
+        });
     } catch (err) {
         next(err);
     }
 };
 
-// Genera token para usuario autenticado (passport local ya puso user en req.user)
-export const login = (req, res) => {
-    const user = req.user;
-    // omitimos campos sensibles
-    const token = jwt.sign({ id: user._id, email: user.email, role: user.role }, process.env.JWT_SECRET || 'default_jwt_secret', {
-        expiresIn: '1h'
-    });
+/**
+ * Autentica un usuario y genera JWT
+ */
+export const login = async (req, res, next) => {
+    try {
+        const { email, password } = req.body;
 
-    res.json({ status: 'success', token });
+        if (!email || !password) {
+            return res.status(400).json({
+                status: 'error',
+                message: 'Email y contraseña requeridos'
+            });
+        }
+
+        const user = await userService.validatePassword(email, password);
+        
+        const token = generateToken(user._id.toString(), user.role);
+
+        res.json({
+            status: 'success',
+            token,
+            user: new AuthUserDTO(user)
+        });
+    } catch (error) {
+        next(error);
+    }
 };
 
-// Devuelve la información del usuario que ya fue validado por la estrategia jwt
-export const current = (req, res) => {
-    res.json({ status: 'success', user: req.user });
+/**
+ * Obtiene la información del usuario autenticado
+ * Requiere middleware de autenticación JWT
+ */
+export const current = async (req, res, next) => {
+    try {
+        const user = await userService.findUserById(req.user.userId);
+        
+        res.json({
+            status: 'success',
+            payload: new AuthUserDTO(user)
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * Solicita reset de contraseña
+ */
+export const requestPasswordReset = async (req, res, next) => {
+    try {
+        const { email } = req.body;
+
+        if (!email) {
+            return res.status(400).json({
+                status: 'error',
+                message: 'Email requerido'
+            });
+        }
+
+        const result = await userService.requestPasswordReset(email);
+
+        res.json({
+            status: 'success',
+            message: result.message
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * Reset de contraseña con token
+ */
+export const resetPassword = async (req, res, next) => {
+    try {
+        const { token } = req.params;
+        const { newPassword, confirmPassword } = req.body;
+
+        if (!newPassword || !confirmPassword) {
+            return res.status(400).json({
+                status: 'error',
+                message: 'Contraseña y confirmación requeridas'
+            });
+        }
+
+        if (newPassword !== confirmPassword) {
+            return res.status(400).json({
+                status: 'error',
+                message: 'Las contraseñas no coinciden'
+            });
+        }
+
+        const user = await userService.resetPassword(token, newPassword);
+
+        res.json({
+            status: 'success',
+            message: 'Contraseña actualizada correctamente',
+            payload: new AuthUserDTO(user)
+        });
+    } catch (error) {
+        next(error);
+    }
 };
