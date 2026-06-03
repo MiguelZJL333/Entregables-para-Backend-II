@@ -1,4 +1,4 @@
-# Backend E-commerce + Adoption - Entregable Final
+# Backend E-commerce + Adoption - Entregable Final.
 
 API REST para e-commerce con un módulo adicional de **gestión de adopciones de mascotas**, desarrollado con Node.js, Express y MongoDB. Incluye autenticación con JWT, manejo de carritos, productos y un CRUD completo de adopciones con tests funcionales y Docker.
 
