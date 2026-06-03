@@ -10,6 +10,7 @@ import viewsRouter from './routes/views.router.js';
 import passport from './config/passport.config.js';
 import usersRouter from './routes/users.router.js';
 import sessionsRouter from './routes/sessions.router.js';
+import adoptionRouter from './routes/adoption.router.js';
 import { verifyMailerConnection } from './utils/mailer.js';
 
 // Inicialización de variables de entorno
@@ -51,6 +52,7 @@ app.use('/api/products', productsRouter);
 app.use('/api/carts', cartRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/sessions', sessionsRouter);
+app.use('/api/adoptions', adoptionRouter);
 app.use('/', viewsRouter);
 
 // Manejo de errores (siempre al final)
